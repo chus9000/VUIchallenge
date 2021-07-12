@@ -6526,8 +6526,11 @@ fieldset:disabled .btn {
   .modal-fullscreen-sm-down .modal-footer {
     border-radius: 0;
   }
+  .displ-none {
+    display: none;
+  }
   .btn-lg, .email-input, .btn-group-lg > .btn {
-    padding: 1rem 0.5rem 1rem;}
+    padding: 1rem 0.2rem 1rem;}
 }
 
 @media (max-width: 767.98px) {
