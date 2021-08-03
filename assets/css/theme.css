@@ -95,6 +95,12 @@ h1, .h1 {
   font-size: calc(1.37383rem + 1.48598vw);
 }
 
+.faqP {margin-bottom: 2rem!important;}
+
+.faqH {margin-bottom: 1rem!important;}
+
+.quotesJpg {width: 50px;  height: 50px; border-radius: 50%;}
+
 @media (min-width: 1200px) {
   h1, .h1 {
     font-size: 3.3rem;
