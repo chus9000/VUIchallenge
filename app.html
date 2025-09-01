@@ -102,24 +102,34 @@
       console.log('🔍 Login attempt:', isLoginAttempt);
       console.log('🌐 Current URL:', window.location.href);
       
+      // Clear login parameter from URL to prevent loops
+      if (isLoginAttempt) {
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+        console.log('🧹 Cleared login parameter from URL');
+      }
+      
+      // Check if we're in a login loop
+      const loginAttempts = parseInt(sessionStorage.getItem('loginAttempts') || '0');
+      if (loginAttempts > 3) {
+        console.log('🛑 Too many login attempts, stopping');
+        sessionStorage.removeItem('loginAttempts');
+        showLoginPrompt();
+        return;
+      }
+      
       // Check Firebase auth state
       if (auth) {
         console.log('✅ Firebase auth available');
         
-        // Add a flag to prevent multiple auth state changes
-        let authStateProcessed = false;
-        
         auth.onAuthStateChanged((user) => {
           console.log('🔄 Auth state changed:', user ? 'SIGNED IN' : 'SIGNED OUT');
           
-          if (authStateProcessed) {
-            console.log('⚠️ Auth state already processed, ignoring');
-            return;
-          }
-          
           if (user) {
             console.log('👤 User signed in:', user.displayName);
-            authStateProcessed = true;
+            
+            // Clear login attempts on successful login
+            sessionStorage.removeItem('loginAttempts');
             
             // User is signed in
             isLoggedIn = true;
@@ -144,8 +154,9 @@
           } else {
             console.log('🚫 User signed out');
             // User is signed out
-            if (isLoginAttempt) {
+            if (isLoginAttempt && loginAttempts < 3) {
               console.log('🔑 Starting login process');
+              sessionStorage.setItem('loginAttempts', (loginAttempts + 1).toString());
               login();
             } else {
               console.log('📋 Showing login prompt');
@@ -155,7 +166,6 @@
         });
       } else {
         console.log('❌ Firebase not available');
-        // Firebase not available, show error
         showFirebaseError();
       }
     }
