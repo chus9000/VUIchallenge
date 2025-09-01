@@ -215,10 +215,16 @@
           const today = new Date();
           const daysSinceStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
           
+          console.log('🗓️ Start date:', startDate);
+          console.log('📅 Today:', today);
+          console.log('📊 Days since start:', daysSinceStart);
+          
           // Update unlock status based on days passed
           let needsUpdate = false;
           challenges.forEach((challenge, index) => {
-            if (index <= daysSinceStart && !challenge.unlocked) {
+            const shouldBeUnlocked = index <= daysSinceStart;
+            if (shouldBeUnlocked && !challenge.unlocked) {
+              console.log(`🔓 Unlocking challenge ${challenge.id}`);
               challenge.unlocked = true;
               needsUpdate = true;
             }
@@ -325,6 +331,7 @@
             <h1 class="text-gradient" style="font-size: 2.5rem; font-weight: 700; margin: 0;">VUIchallenge</h1>
           </div>
           <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto;">Complete one challenge per day. New challenges unlock daily.</p>
+          <button onclick="location.reload()" style="margin-top: 1rem; background: var(--primary); color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">🔄 Refresh Challenges</button>
           <div class="container">
             <div style="text-align: center; margin-bottom: 1rem; font-size: 1.1rem;">
               <span id="completed-count" style="font-size: 2rem; font-weight: 700; color: var(--primary);">${completedCount}</span> <span style="color: var(--text-secondary);">of 100 challenges completed</span>
