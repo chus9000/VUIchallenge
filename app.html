@@ -211,13 +211,15 @@
             });
           }
           
-          // Calculate days since start
+          // Calculate days since start (calendar days, not 24-hour periods)
           const today = new Date();
-          const daysSinceStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+          const startDateOnly = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+          const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+          const daysSinceStart = Math.floor((todayOnly - startDateOnly) / (1000 * 60 * 60 * 24));
           
           console.log('🗓️ Start date:', startDate);
           console.log('📅 Today:', today);
-          console.log('📊 Days since start:', daysSinceStart);
+          console.log('📊 Days since start (calendar days):', daysSinceStart);
           
           // Update unlock status based on days passed
           let needsUpdate = false;
@@ -291,7 +293,11 @@
         }
       }
       
-      const daysSinceStart = Math.floor((new Date() - startDate) / (1000 * 60 * 60 * 24));
+      // Calculate days since start (calendar days, not 24-hour periods)
+      const today = new Date();
+      const startDateOnly = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+      const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const daysSinceStart = Math.floor((todayOnly - startDateOnly) / (1000 * 60 * 60 * 24));
       
       let needsUpdate = false;
       challenges.forEach((challenge, index) => {
