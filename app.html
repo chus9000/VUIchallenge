@@ -94,43 +94,9 @@
     
     // Initialize app
     function init() {
-      console.log('🚀 Init called');
-      
-      // Check if this is a login attempt from landing page
-      const urlParams = new URLSearchParams(window.location.search);
-      const isLoginAttempt = urlParams.get('login') === 'true';
-      console.log('🔍 Login attempt:', isLoginAttempt);
-      console.log('🌐 Current URL:', window.location.href);
-      
-      // Clear login parameter from URL to prevent loops
-      if (isLoginAttempt) {
-        const newUrl = window.location.pathname;
-        window.history.replaceState({}, document.title, newUrl);
-        console.log('🧹 Cleared login parameter from URL');
-      }
-      
-      // Check if we're in a login loop
-      const loginAttempts = parseInt(sessionStorage.getItem('loginAttempts') || '0');
-      if (loginAttempts > 3) {
-        console.log('🛑 Too many login attempts, stopping');
-        sessionStorage.removeItem('loginAttempts');
-        showLoginPrompt();
-        return;
-      }
-      
-      // Check Firebase auth state
       if (auth) {
-        console.log('✅ Firebase auth available');
-        
         auth.onAuthStateChanged((user) => {
-          console.log('🔄 Auth state changed:', user ? 'SIGNED IN' : 'SIGNED OUT');
-          
           if (user) {
-            console.log('👤 User signed in:', user.displayName);
-            
-            // Clear login attempts on successful login
-            sessionStorage.removeItem('loginAttempts');
-            
             // User is signed in
             isLoggedIn = true;
             currentUser = {
@@ -152,59 +118,37 @@
             
             loadApp();
           } else {
-            console.log('🚫 User signed out');
             // User is signed out
-            if (isLoginAttempt && loginAttempts < 3) {
-              console.log('🔑 Starting login process');
-              sessionStorage.setItem('loginAttempts', (loginAttempts + 1).toString());
-              login();
-            } else {
-              console.log('📋 Showing login prompt');
-              showLoginPrompt();
-            }
+            showLoginPrompt();
           }
         });
       } else {
-        console.log('❌ Firebase not available');
         showFirebaseError();
       }
     }
     
     // Login function
     function login() {
-      console.log('🔑 Login function called');
-      
       if (!auth) {
-        console.error('❌ Firebase Auth not initialized');
+        console.error('Firebase Auth not initialized');
         return;
       }
       
-      // Show loading
       loadingContainer.style.display = 'block';
-      console.log('⏳ Loading screen shown');
       
       const provider = new firebase.auth.GoogleAuthProvider();
       provider.addScope('profile');
       provider.addScope('email');
       
-      console.log('🚀 Starting redirect to Google');
-      
-      // Try redirect first, fallback to popup if it fails
-      auth.signInWithRedirect(provider)
+      // Use popup only to avoid redirect issues
+      auth.signInWithPopup(provider)
+        .then((result) => {
+          // Auth state change will handle the rest
+        })
         .catch((error) => {
-          console.error('❌ Redirect failed, trying popup:', error);
-          
-          // Fallback to popup
-          auth.signInWithPopup(provider)
-            .then((result) => {
-              console.log('✅ Popup login successful');
-              // Auth state change will handle the rest
-            })
-            .catch((popupError) => {
-              console.error('❌ Both redirect and popup failed:', popupError);
-              loadingContainer.style.display = 'none';
-              alert('Login failed. Please try again or check your internet connection.');
-            });
+          console.error('Login failed:', error);
+          loadingContainer.style.display = 'none';
+          alert('Login failed. Please allow popups and try again.');
         });
     }
     
