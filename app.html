@@ -216,11 +216,20 @@
           const daysSinceStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
           
           // Update unlock status based on days passed
+          let needsUpdate = false;
           challenges.forEach((challenge, index) => {
-            if (index <= daysSinceStart) {
+            if (index <= daysSinceStart && !challenge.unlocked) {
               challenge.unlocked = true;
+              needsUpdate = true;
             }
           });
+          
+          // Save updated challenges if unlock status changed
+          if (needsUpdate && userChallengesRef) {
+            userChallengesRef.update({
+              challenges: challenges
+            });
+          }
           
           // Render the app
           renderApp(challenges, daysSinceStart);
@@ -278,11 +287,18 @@
       
       const daysSinceStart = Math.floor((new Date() - startDate) / (1000 * 60 * 60 * 24));
       
+      let needsUpdate = false;
       challenges.forEach((challenge, index) => {
-        if (index <= daysSinceStart) {
+        if (index <= daysSinceStart && !challenge.unlocked) {
           challenge.unlocked = true;
+          needsUpdate = true;
         }
       });
+      
+      // Save updated challenges if unlock status changed
+      if (needsUpdate) {
+        localStorage.setItem('challenges', JSON.stringify(challenges));
+      }
       
       renderApp(challenges, daysSinceStart);
       appContainer.style.display = 'block';
@@ -821,7 +837,7 @@
           
           if (timeLeft <= 0) {
             element.textContent = 'Available now!';
-            setTimeout(() => location.reload(), 1000);
+            // Don't reload page automatically
             return;
           }
           
