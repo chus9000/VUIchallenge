@@ -99,36 +99,6 @@
       
       // Check Firebase auth state
       if (auth) {
-        // Handle redirect result first
-        auth.getRedirectResult().then((result) => {
-          if (result.user) {
-            // User just signed in via redirect
-            const user = result.user;
-            isLoggedIn = true;
-            currentUser = {
-              uid: user.uid,
-              name: user.displayName,
-              email: user.email,
-              avatar: user.photoURL
-            };
-            localStorage.setItem('isLoggedIn', 'true');
-            
-            if (db) {
-              userChallengesRef = db.collection('userChallenges').doc(user.uid);
-            }
-            
-            // Set start date if first time
-            if (!localStorage.getItem('startDate')) {
-              localStorage.setItem('startDate', new Date().toISOString());
-            }
-            
-            loadApp();
-          }
-        }).catch((error) => {
-          console.error('Redirect login failed:', error);
-          loadingContainer.style.display = 'none';
-        });
-        
         auth.onAuthStateChanged((user) => {
           if (user) {
             // User is signed in
@@ -175,7 +145,52 @@
       provider.addScope('profile');
       provider.addScope('email');
       
-      auth.signInWithRedirect(provider);
+      auth.signInWithPopup(provider)
+        .then((result) => {
+          const user = result.user;
+          isLoggedIn = true;
+          currentUser = {
+            uid: user.uid,
+            name: user.displayName,
+            email: user.email,
+            avatar: user.photoURL
+          };
+          
+          // Set start date if first time
+          if (!localStorage.getItem('startDate')) {
+            localStorage.setItem('startDate', new Date().toISOString());
+          }
+          
+          localStorage.setItem('isLoggedIn', 'true');
+          console.log('App - Login state set to true');
+          
+          // Set up user's challenges reference
+          if (db) {
+            try {
+              userChallengesRef = db.collection('userChallenges').doc(user.uid);
+            } catch (error) {
+              console.log('Firebase setup failed:', error);
+            }
+          }
+          
+          // Check if there's a redirect URL stored
+          const redirectUrl = localStorage.getItem('redirectAfterLogin');
+          if (redirectUrl && redirectUrl !== window.location.href && !redirectUrl.includes('app.html')) {
+            localStorage.removeItem('redirectAfterLogin');
+            window.location.href = redirectUrl;
+            return;
+          } else {
+            localStorage.removeItem('redirectAfterLogin');
+          }
+          
+          // Load challenges data and app
+          loadApp();
+        })
+        .catch((error) => {
+          console.error('Login failed:', error);
+          loadingContainer.style.display = 'none';
+          alert('Login failed. Please try again.');
+        });
     }
     
     // Load the main app
