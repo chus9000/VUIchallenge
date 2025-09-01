@@ -1,0 +1,11 @@
+Placeholder images needed:
+
+- jesus-martin.jpg (for Buy Me a Coffee section)
+- rob-hayes.jpg (Rob Hayes, Voiceflow)
+- michal-stanislawek.jpg (Michal Stanislawek, VoiceLunch)
+- nat-walker.jpg (Nat Walker, Vodafone)
+- hillary-black.jpg (Hillary Black, CxD)
+- peter-isaacs.jpg (Peter Isaacs, WooliesX)
+- eran-soroka.jpg (Eran Soroka, Cocohub)
+
+All images should be square format, approximately 64x64px for testimonials and 80x80px for Jesus Martin.

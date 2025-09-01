@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Challenge App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- Favicon -->
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon/favicon-16x16.png">
+  <link rel="manifest" href="assets/img/favicon/site.webmanifest">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:title" content="VUIchallenge">
+  <meta property="og:description" content="Daily free challenges for you to learn VUI and conversational design">
+  <meta property="og:image" content="assets/img/logo.png">
+  <meta property="og:url" content="app.html">
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@VUIchallenge">
+  <meta name="twitter:creator" content="@chus9000">
+  <meta name="twitter:url" content="app.html">
+  <meta name="twitter:title" content="VUIchallenge">
+  <meta name="twitter:description" content="Daily free challenges for you to learn VUI and conversational design">
+  <meta name="twitter:image" content="assets/img/logo.png">
+  <meta name="twitter:image:alt" content="Logo for VUIchallenge, two speech bubbles in blue and pink intersect creating a rounded purple space.">
+  
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-N8QRSVPK');</script>
+  <!-- End Google Tag Manager -->
+
+</head>
+<body>
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N8QRSVPK"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+
+  <!-- Loading Screen -->
+  <div id="loading-container" class="loading" style="display: none;">
+    Loading your challenges...
+  </div>
+  
+  <!-- App Container -->
+  <div id="app-container"></div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js" onerror="console.log('Firebase config failed to load')"></script>
+  <script>
+    // Add cache busting for challenges.js
+    window.addEventListener('load', function() {
+      if (typeof generateChallenges === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'challenges.js?v=' + Date.now();
+        document.head.appendChild(script);
+      }
+    });
+  </script>
+
+  <script>
+    // Firebase references
+    let auth, db, userChallengesRef = null;
+    
+    // Try to initialize Firebase, but don't let it break the app
+    try {
+      if (typeof firebase !== 'undefined') {
+        auth = firebase.auth();
+        db = firebase.firestore();
+      }
+    } catch (error) {
+      console.log('Firebase initialization failed:', error);
+    }
+    
+    let isLoggedIn = false;
+    let currentUser = null;
+    
+    // DOM elements
+    const loadingContainer = document.getElementById('loading-container');
+    const appContainer = document.getElementById('app-container');
+    
+    // Initialize app
+    function init() {
+      // Check if this is a login attempt from landing page
+      const urlParams = new URLSearchParams(window.location.search);
+      const isLoginAttempt = urlParams.get('login') === 'true';
+      
+      // Check Firebase auth state
+      if (auth) {
+        auth.onAuthStateChanged((user) => {
+          if (user) {
+            // User is signed in
+            isLoggedIn = true;
+            currentUser = {
+              uid: user.uid,
+              name: user.displayName,
+              email: user.email,
+              avatar: user.photoURL
+            };
+            localStorage.setItem('isLoggedIn', 'true');
+            
+            if (db) {
+              userChallengesRef = db.collection('userChallenges').doc(user.uid);
+            }
+            
+            loadApp();
+          } else {
+            // User is signed out
+            if (isLoginAttempt) {
+              login();
+            } else {
+              showLoginPrompt();
+            }
+          }
+        });
+      } else {
+        // Firebase not available, show error
+        showFirebaseError();
+      }
+    }
+    
+    // Login function
+    function login() {
+      if (!auth) {
+        console.error('Firebase Auth not initialized');
+        return;
+      }
+      
+      // Show loading
+      loadingContainer.style.display = 'block';
+      
+      const provider = new firebase.auth.GoogleAuthProvider();
+      provider.addScope('profile');
+      provider.addScope('email');
+      
+      auth.signInWithPopup(provider)
+        .then((result) => {
+          const user = result.user;
+          isLoggedIn = true;
+          currentUser = {
+            uid: user.uid,
+            name: user.displayName,
+            email: user.email,
+            avatar: user.photoURL
+          };
+          
+          // Set start date if first time
+          if (!localStorage.getItem('startDate')) {
+            localStorage.setItem('startDate', new Date().toISOString());
+          }
+          
+          localStorage.setItem('isLoggedIn', 'true');
+          console.log('App - Login state set to true');
+          
+          // Set up user's challenges reference
+          if (db) {
+            try {
+              userChallengesRef = db.collection('userChallenges').doc(user.uid);
+            } catch (error) {
+              console.log('Firebase setup failed:', error);
+            }
+          }
+          
+          // Check if there's a redirect URL stored
+          const redirectUrl = localStorage.getItem('redirectAfterLogin');
+          if (redirectUrl && redirectUrl !== window.location.href && !redirectUrl.includes('app.html')) {
+            localStorage.removeItem('redirectAfterLogin');
+            window.location.href = redirectUrl;
+            return;
+          } else {
+            localStorage.removeItem('redirectAfterLogin');
+          }
+          
+          // Load challenges data and app
+          loadApp();
+        })
+        .catch((error) => {
+          console.error('Login failed:', error);
+          loadingContainer.style.display = 'none';
+          alert('Login failed. Please try again.');
+        });
+    }
+    
+    // Load the main app
+    function loadApp() {
+      // Check if challenges.js is already loaded
+      if (typeof generateChallenges !== 'undefined') {
+        loadAppInterface();
+        return;
+      }
+      
+      // Load challenges data with cache busting
+      const script = document.createElement('script');
+      script.src = 'challenges.js?v=' + Date.now();
+      script.onload = () => {
+        // Load the main app interface
+        loadAppInterface();
+      };
+      document.head.appendChild(script);
+    }
+    
+    // Load app interface
+    function loadAppInterface() {
+      loadingContainer.style.display = 'none';
+      
+      // Load challenges from Firebase or fallback
+      if (userChallengesRef) {
+        userChallengesRef.get().then((doc) => {
+          let challenges;
+          let startDate;
+          
+          const savedVersion = doc.exists ? doc.data().challengesVersion : null;
+          
+          if (doc.exists && doc.data().challenges && savedVersion === CHALLENGES_VERSION) {
+            challenges = doc.data().challenges;
+            startDate = new Date(doc.data().startDate);
+          } else {
+            const newChallenges = generateChallenges(100);
+            
+            if (doc.exists && doc.data().challenges) {
+              const oldChallenges = doc.data().challenges;
+              newChallenges.forEach((challenge, index) => {
+                if (oldChallenges[index]) {
+                  challenge.completed = oldChallenges[index].completed || false;
+                  challenge.notes = oldChallenges[index].notes || '';
+                }
+              });
+              startDate = new Date(doc.data().startDate);
+            } else {
+              startDate = new Date();
+              localStorage.setItem('startDate', startDate.toISOString());
+            }
+            
+            challenges = newChallenges;
+            
+            userChallengesRef.set({
+              challenges: challenges,
+              startDate: startDate.toISOString(),
+              challengesVersion: CHALLENGES_VERSION
+            });
+          }
+          
+          // Calculate days since start
+          const today = new Date();
+          const daysSinceStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+          
+          // Update unlock status based on days passed
+          challenges.forEach((challenge, index) => {
+            if (index <= daysSinceStart) {
+              challenge.unlocked = true;
+            }
+          });
+          
+          // Render the app
+          renderApp(challenges, daysSinceStart);
+          appContainer.style.display = 'block';
+          
+          // Check if user completed all 100 challenges
+          const completedCount = challenges.filter(c => c.completed).length;
+          if (completedCount === 100 && !localStorage.getItem('certificateShown')) {
+            showCompletionModal();
+            localStorage.setItem('certificateShown', 'true');
+          }
+        }).catch((error) => {
+          console.error("Error loading challenges:", error);
+          loadFallbackChallenges();
+        });
+      } else {
+        // Firebase not available, use localStorage fallback
+        loadFallbackChallenges();
+      }
+    }
+    
+    // Fallback function for when Firebase is not available
+    function loadFallbackChallenges() {
+      const savedVersion = localStorage.getItem('challengesVersion');
+      const savedChallenges = localStorage.getItem('challenges');
+      let challenges, startDate;
+      
+      // Check if we need to update challenges due to version change
+      if (savedChallenges && savedVersion === CHALLENGES_VERSION) {
+        challenges = JSON.parse(savedChallenges);
+        startDate = new Date(localStorage.getItem('startDate'));
+      } else {
+        // Generate fresh challenges and preserve completion status
+        const newChallenges = generateChallenges(100);
+        
+        if (savedChallenges) {
+          const oldChallenges = JSON.parse(savedChallenges);
+          newChallenges.forEach((challenge, index) => {
+            if (oldChallenges[index]) {
+              challenge.completed = oldChallenges[index].completed || false;
+              challenge.notes = oldChallenges[index].notes || '';
+            }
+          });
+        }
+        
+        challenges = newChallenges;
+        startDate = new Date(localStorage.getItem('startDate') || new Date().toISOString());
+        
+        localStorage.setItem('challenges', JSON.stringify(challenges));
+        localStorage.setItem('challengesVersion', CHALLENGES_VERSION);
+        if (!localStorage.getItem('startDate')) {
+          localStorage.setItem('startDate', startDate.toISOString());
+        }
+      }
+      
+      const daysSinceStart = Math.floor((new Date() - startDate) / (1000 * 60 * 60 * 24));
+      
+      challenges.forEach((challenge, index) => {
+        if (index <= daysSinceStart) {
+          challenge.unlocked = true;
+        }
+      });
+      
+      renderApp(challenges, daysSinceStart);
+      appContainer.style.display = 'block';
+    }
+    
+    // Render the main app interface with progressive loading
+    function renderApp(challenges, daysSinceStart) {
+      const completedCount = challenges.filter(c => c.completed).length;
+      const progressPercent = (completedCount / challenges.length) * 100;
+      
+      // Show first 20 challenges initially for faster loading
+      const initialChallenges = challenges.slice(0, 20);
+      
+      appContainer.innerHTML = `
+        <div id="user-info" class="glass" style="display: flex; align-items: center; gap: 1rem; position: absolute; top: 1rem; right: 1rem; padding: 0.5rem 1rem; border-radius: 50px; font-size: 0.9rem;">
+          <img src="${currentUser.avatar}" alt="User" style="width: 32px; height: 32px; border-radius: 50%;">
+          <span>${currentUser.name}</span>
+          <button id="logout-button" style="background: transparent; border: none; color: var(--text-secondary); cursor: pointer; padding: 0.25rem 0.5rem; font-size: 0.8rem;">Logout</button>
+        </div>
+        
+        <header style="padding: 2rem; text-align: center;">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 0.5rem;">
+            <img src="assets/img/logo.png" alt="VUIchallenge Logo" style="width: 60px; height: 60px;">
+            <h1 class="text-gradient" style="font-size: 2.5rem; font-weight: 700; margin: 0;">VUIchallenge</h1>
+          </div>
+          <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto;">Complete one challenge per day. New challenges unlock daily.</p>
+          <div class="container">
+            <div style="text-align: center; margin-bottom: 1rem; font-size: 1.1rem;">
+              <span id="completed-count" style="font-size: 2rem; font-weight: 700; color: var(--primary);">${completedCount}</span> <span style="color: var(--text-secondary);">of 100 challenges completed</span>
+              ${completedCount === 100 ? '<div style="margin-top: 1rem;"><button id="certificate-btn" style="background: linear-gradient(135deg, var(--success), #4ade80); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: Poppins, sans-serif;">📜 Download Certificate</button></div>' : ''}
+            </div>
+            <div style="position: relative; margin: 1rem 0 3rem;">
+              <!-- Progress bar -->
+              <div class="progress-container glass" style="width: 100%; border-radius: 15px; height: 24px; position: relative; margin-bottom: 0.6rem;">
+                <div class="progress-fill" style="height: 100%; border-radius: 15px; background: linear-gradient(135deg, var(--primary), var(--secondary)); transition: width 0.3s ease; width: ${progressPercent}%;"></div>
+                
+                <!-- Milestone markers -->
+                ${[20, 40, 60, 80, 100].map(milestone => {
+                  const position = (milestone / 100) * 100;
+                  const isReached = completedCount >= milestone;
+                  return `
+                    <div style="position: absolute; left: ${position}%; top: 0; height: 100%; width: 2px; background: ${isReached ? '#ffffff' : 'rgba(255,255,255,0.4)'}; transform: translateX(-50%);"></div>
+                  `;
+                }).join('')}
+              </div>
+              
+              <!-- Milestone labels below -->
+              <div style="display: flex; justify-content: space-between; align-items: center; position: relative;">
+                <!-- All 6 milestone labels below progress bar -->
+                <div class="milestone-label" style="left: 2%;">
+                  <div style="font-size: 0.8rem; color: ${completedCount < 20 ? 'white' : 'var(--text-secondary)'}; font-weight: 500; transition: all 0.3s ease; background: ${completedCount < 20 ? 'var(--primary)' : 'transparent'}; padding: ${completedCount < 20 ? '0.25rem 0.5rem' : '0.25rem 0'}; border-radius: ${completedCount < 20 ? '12px' : '0'};">Beginner</div>
+                </div>
+                
+                ${[20, 40, 60, 80].map((milestone, index) => {
+                  const titles = ['Explorer', 'Achiever', 'Advanced', 'Master'];
+                  const position = (milestone / 100) * 100;
+                  const currentMilestone = Math.floor(completedCount / 20) * 20;
+                  const isCurrentMilestone = milestone === currentMilestone && completedCount >= milestone;
+                  return `
+                    <div class="milestone-label" style="left: ${position}%;">
+                      <div style="font-size: 0.8rem; color: ${isCurrentMilestone ? 'white' : 'var(--text-secondary)'}; font-weight: 500; transition: all 0.3s ease; background: ${isCurrentMilestone ? 'var(--primary)' : 'transparent'}; padding: ${isCurrentMilestone ? '0.25rem 0.5rem' : '0.25rem 0'}; border-radius: ${isCurrentMilestone ? '12px' : '0'};">${titles[index]}</div>
+                    </div>
+                  `;
+                }).join('')}
+                
+                <div class="milestone-label" style="left: 98%;">
+                  <div style="font-size: 0.8rem; color: ${completedCount >= 100 ? 'white' : 'var(--text-secondary)'}; font-weight: 500; transition: all 0.3s ease; background: ${completedCount >= 100 ? 'var(--primary)' : 'transparent'}; padding: ${completedCount >= 100 ? '0.25rem 0.5rem' : '0.25rem 0'}; border-radius: ${completedCount >= 100 ? '12px' : '0'};">Champion</div>
+                </div>
+              </div>
+              
+              <style>
+                @media (min-width: 768px) {
+                  .milestone-label { display: block !important; }
+                  .milestone-label-mobile { display: none !important; }
+                }
+                @media (max-width: 767px) {
+                  .milestone-label { display: none !important; }
+                }
+              </style>
+            </div>
+
+          </div>
+        </header>
+        
+        <div class="container">
+          <div id="challenge-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 2rem;">
+            ${initialChallenges.map(challenge => `
+              <div class="challenge-card glass ${challenge.unlocked ? 'unlocked' : 'locked'} ${challenge.completed ? 'completed' : ''}" 
+                   data-id="${challenge.id}"
+                   style="padding: 1.5rem; height: 180px; display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.3s ease, box-shadow 0.3s ease; position: relative; overflow: hidden; ${challenge.unlocked ? 'cursor: pointer;' : 'cursor: not-allowed; filter: grayscale(1); opacity: 0.7;'} ${challenge.completed ? 'border: 2px solid var(--success);' : ''}">
+                ${challenge.completed ? '<div style="content: \'✓\'; position: absolute; top: 1rem; right: 1rem; background: var(--success); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">✓</div>' : ''}
+                <div>
+                  <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">${challenge.title}</h3>
+                  <div style="font-size: 0.9rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem;">
+                    ${challenge.unlocked 
+                      ? challenge.completed 
+                        ? '<span style="background-color: var(--success); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 500; display: inline-block; margin-top: 4px;">COMPLETED ✓</span>' 
+                        : '<span>Ready to complete</span>'
+                      : challenge.id - challenges.filter(c => c.unlocked).length === 1 
+                        ? `<span><span style="margin-right: 4px;">🔒</span> <span class="countdown-timer" data-challenge-id="${challenge.id}">Unlocks in 1 day</span></span>`
+                        : `<span><span style="margin-right: 4px;">🔒</span> Unlocks in ${challenge.id - challenges.filter(c => c.unlocked).length} day${challenge.id - challenges.filter(c => c.unlocked).length > 1 ? 's' : ''}</span>`
+                    }
+                  </div>
+                </div>
+                <div>Day ${challenge.id}${challenge.id === 1 ? `<br><span style="font-size: 0.7rem; color: var(--text-secondary);">Started: ${new Date(localStorage.getItem('startDate')).toLocaleDateString()}</span>` : ''}</div>
+              </div>
+            `).join('')}
+          </div>
+          ${challenges.length > 20 ? '<div id="loading-indicator" style="text-align: center; margin: 2rem 0; display: none;"><div style="color: var(--text-secondary);">Loading more challenges...</div></div>' : ''}
+        </div>
+        
+        <!-- Copyright Footer -->
+        <footer style="text-align: center; padding: 2rem; margin-top: 3rem; border-top: 1px solid rgba(253, 133, 228, 0.2); color: var(--text-secondary); font-size: 0.9rem;">
+          <p>Made with love © 2021 - <span class="current-year"></span> <a href="https://jesusmartin.eu" target="_blank" style="color: var(--primary); text-decoration: none; font-weight: 500;">jesusmartin.eu</a></p>
+          <p style="margin-top: 0.5rem;">Any feedback? <a href="mailto:hi@jesusmartin.eu" style="color: var(--primary); text-decoration: none; font-weight: 500;">reach out to hi@jesusmartin.eu</a></p>
+        </footer>
+      `;
+      
+      // Add event listeners
+      document.getElementById('logout-button').addEventListener('click', logout);
+      
+      // Set current year in footer
+      const yearSpan = document.querySelector('.current-year');
+      if (yearSpan) yearSpan.textContent = new Date().getFullYear();
+      
+      // Start countdown timers for challenges unlocking tomorrow
+      startCountdownTimers();
+      
+      // Infinite scroll loading for remaining challenges
+      if (challenges.length > 20) {
+        let currentIndex = 20;
+        let isLoading = false;
+        
+        function loadMoreChallenges() {
+          if (isLoading || currentIndex >= challenges.length) return;
+          
+          isLoading = true;
+          const loadingIndicator = document.getElementById('loading-indicator');
+          if (loadingIndicator) loadingIndicator.style.display = 'block';
+          
+          setTimeout(() => {
+          const nextBatch = challenges.slice(currentIndex, currentIndex + 20);
+          const challengeList = document.getElementById('challenge-list');
+          
+          nextBatch.forEach(challenge => {
+            const challengeCard = document.createElement('div');
+            challengeCard.className = `challenge-card glass ${challenge.unlocked ? 'unlocked' : 'locked'} ${challenge.completed ? 'completed' : ''}`;
+            challengeCard.setAttribute('data-id', challenge.id);
+            challengeCard.style.cssText = `padding: 1.5rem; height: 180px; display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.3s ease, box-shadow 0.3s ease; position: relative; overflow: hidden; ${challenge.unlocked ? 'cursor: pointer;' : 'cursor: not-allowed; filter: grayscale(1); opacity: 0.7;'} ${challenge.completed ? 'border: 2px solid var(--success);' : ''}`;
+            
+            challengeCard.innerHTML = `
+              ${challenge.completed ? '<div style="content: \'✓\'; position: absolute; top: 1rem; right: 1rem; background: var(--success); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">✓</div>' : ''}
+              <div>
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">${challenge.title}</h3>
+                <div style="font-size: 0.9rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem;">
+                  ${challenge.unlocked 
+                    ? challenge.completed 
+                      ? '<span style="background-color: var(--success); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 500; display: inline-block; margin-top: 4px;">COMPLETED ✓</span>' 
+                      : '<span>Ready to complete</span>'
+                    : `<span><span style="margin-right: 4px;">🔒</span> Unlocks in ${challenge.id - challenges.filter(c => c.unlocked).length} day${challenge.id - challenges.filter(c => c.unlocked).length > 1 ? 's' : ''}</span>`
+                  }
+                </div>
+              </div>
+              <div>Day ${challenge.id}</div>
+            `;
+            
+            challengeList.appendChild(challengeCard);
+            
+            // Add event listeners for new cards
+            if (challenge.unlocked) {
+              challengeCard.addEventListener('click', () => showChallengeDetail(challenge, challenges));
+              challengeCard.addEventListener('mouseenter', () => {
+                challengeCard.style.transform = 'translateY(-5px)';
+                challengeCard.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.2)';
+              });
+              challengeCard.addEventListener('mouseleave', () => {
+                challengeCard.style.transform = '';
+                challengeCard.style.boxShadow = '';
+              });
+            }
+          });
+          
+            currentIndex += 20;
+            if (loadingIndicator) loadingIndicator.style.display = 'none';
+            isLoading = false;
+          }, 300);
+        }
+        
+        // Scroll event listener for infinite scroll
+        window.addEventListener('scroll', () => {
+          if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000) {
+            loadMoreChallenges();
+          }
+        });
+      }
+      
+      // Add click events to initially loaded unlocked challenges
+      initialChallenges.forEach(challenge => {
+        if (challenge.unlocked) {
+          const card = document.querySelector(`[data-id="${challenge.id}"]`);
+          card.addEventListener('click', () => showChallengeDetail(challenge, challenges));
+          card.addEventListener('mouseenter', () => {
+            card.style.transform = 'translateY(-5px)';
+            card.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.2)';
+          });
+          card.addEventListener('mouseleave', () => {
+            card.style.transform = '';
+            card.style.boxShadow = '';
+          });
+        }
+      });
+      
+      // Make progress section sticky on scroll
+      const progressContainer = document.querySelector('.container');
+      if (progressContainer) {
+        progressContainer.id = 'progress-section';
+        progressContainer.style.cssText += 'transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100;';
+        
+        window.addEventListener('scroll', function() {
+          const header = document.querySelector('header');
+          if (header) {
+            const headerBottom = header.offsetTop + header.offsetHeight;
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            if (scrollTop > headerBottom - 100) {
+              progressContainer.style.position = 'fixed';
+              progressContainer.style.top = '0';
+              progressContainer.style.left = '0';
+              progressContainer.style.right = '0';
+              progressContainer.style.maxWidth = '1200px';
+              progressContainer.style.margin = '0 auto';
+              progressContainer.style.height = '120px';
+              progressContainer.style.overflow = 'hidden';
+              progressContainer.style.background = 'rgba(255, 255, 255, 0.95)';
+              progressContainer.style.backdropFilter = 'blur(16px)';
+              progressContainer.style.webkitBackdropFilter = 'blur(16px)';
+              progressContainer.style.borderRadius = '0 0 16px 16px';
+              progressContainer.style.borderBottom = '3px solid rgba(253, 133, 228, 0.3)';
+              progressContainer.style.boxShadow = '0 8px 32px rgba(253, 133, 228, 0.15)';
+              progressContainer.style.paddingTop = '0.5rem';
+              progressContainer.style.paddingBottom = '0.5rem';
+              progressContainer.style.transform = 'translateY(0)';
+              progressContainer.style.opacity = '1';
+              
+              // Compact the content when sticky
+              const countElement = progressContainer.querySelector('#completed-count');
+              const textElement = countElement.nextElementSibling;
+              const progressDiv = progressContainer.querySelector('div[style*="position: relative"]');
+              
+              if (countElement) countElement.style.fontSize = '1.5rem';
+              if (textElement) textElement.style.fontSize = '0.9rem';
+              if (progressDiv) {
+                progressDiv.style.margin = '0.5rem 0 0.25rem';
+                const progressBar = progressDiv.querySelector('.progress-container');
+                if (progressBar) progressBar.style.height = '16px';
+              }
+              
+              // Hide milestone labels when sticky
+              const milestoneLabels = progressContainer.querySelectorAll('.milestone-label, .milestone-label-mobile');
+              milestoneLabels.forEach(label => label.style.display = 'none');
+              
+              // Removed sticky level indicator to avoid duplication
+            } else {
+              progressContainer.style.position = 'static';
+              progressContainer.style.height = 'auto';
+              progressContainer.style.overflow = 'visible';
+              progressContainer.style.background = 'transparent';
+              progressContainer.style.backdropFilter = 'none';
+              progressContainer.style.webkitBackdropFilter = 'none';
+              progressContainer.style.borderRadius = '0';
+              progressContainer.style.borderBottom = 'none';
+              progressContainer.style.boxShadow = 'none';
+              progressContainer.style.paddingTop = '0';
+              progressContainer.style.transform = 'translateY(0)';
+              progressContainer.style.opacity = '1';
+              
+              // Restore original sizes when not sticky
+              const countElement = progressContainer.querySelector('#completed-count');
+              const textElement = countElement.nextElementSibling;
+              const progressDiv = progressContainer.querySelector('div[style*="position: relative"]');
+              
+              if (countElement) countElement.style.fontSize = '2rem';
+              if (textElement) textElement.style.fontSize = '1.1rem';
+              if (progressDiv) {
+                progressDiv.style.margin = '1rem 0 3rem';
+                const progressBar = progressDiv.querySelector('.progress-container');
+                if (progressBar) progressBar.style.height = '24px';
+              }
+              
+              // Show milestone labels when not sticky
+              const milestoneLabels = progressContainer.querySelectorAll('.milestone-label, .milestone-label-mobile');
+              milestoneLabels.forEach(label => label.style.display = '');
+              
+              // Remove sticky level indicator
+              const levelIndicator = progressContainer.querySelector('.sticky-level');
+              if (levelIndicator) levelIndicator.remove();
+              
+              // Add certificate button click handler
+              const certBtn = document.getElementById('certificate-btn');
+              if (certBtn) {
+                certBtn.addEventListener('click', () => {
+                  generateCertificate();
+                });
+              }
+            }
+          }
+        });
+      }
+    }
+    
+    // Show challenge detail
+    function showChallengeDetail(challenge, allChallenges) {
+      // This would load a separate detail page
+      // For now, we'll use a simple modal-like approach
+      window.location.href = `detail.html?id=${challenge.id}`;
+    }
+    
+    // Logout function
+    function logout() {
+      if (auth) {
+        auth.signOut().then(() => {
+          isLoggedIn = false;
+          currentUser = null;
+          localStorage.setItem('isLoggedIn', 'false');
+          window.location.href = 'index.html';
+        }).catch((error) => {
+          console.error('Logout failed:', error);
+        });
+      } else {
+        isLoggedIn = false;
+        currentUser = null;
+        localStorage.setItem('isLoggedIn', 'false');
+        window.location.href = 'index.html';
+      }
+    }
+    
+    // Show Firebase error
+    function showFirebaseError() {
+      loadingContainer.style.display = 'none';
+      appContainer.innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; text-align: center; padding: 2rem;">
+          <div class="glass" style="max-width: 500px; width: 100%; padding: 3rem 2rem; margin: 0 auto;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">⚠️</div>
+            <h1 class="text-gradient" style="margin-bottom: 1rem;">Authentication Error</h1>
+            <p style="margin-bottom: 2rem; color: var(--text-secondary);">Firebase authentication is not available. Please check your internet connection and try again.</p>
+            <button onclick="location.reload()" style="display: inline-block; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 1rem 2rem; border-radius: 8px; border: none; font-weight: 500; margin-right: 1rem; cursor: pointer; font-family: 'Poppins', sans-serif;">Retry</button>
+            <a href="index.html" style="display: inline-block; background: transparent; color: var(--text); border: 1px solid rgba(255, 255, 255, 0.2); padding: 1rem 2rem; border-radius: 8px; text-decoration: none; font-weight: 500;">Back to Home</a>
+          </div>
+        </div>
+      `;
+      appContainer.style.display = 'block';
+    }
+    
+    // Show login prompt for non-authenticated users
+    function showLoginPrompt() {
+      loadingContainer.style.display = 'none';
+      appContainer.innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; text-align: center; padding: 2rem;">
+          <div class="glass" style="max-width: 500px; width: 100%; padding: 3rem 2rem; margin: 0 auto;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">🔐</div>
+            <h1 class="text-gradient" style="margin-bottom: 1rem;">Login Required</h1>
+            <p style="margin-bottom: 2rem; color: var(--text-secondary);">You need to sign in to access the VUIchallenge</p>
+            <button id="direct-login-btn" style="display: inline-block; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 1rem 2rem; border-radius: 8px; border: none; font-weight: 500; margin-right: 1rem; cursor: pointer; font-family: 'Poppins', sans-serif;">Sign In with Google</button>
+            <a href="index.html" style="display: inline-block; background: transparent; color: var(--text); border: 1px solid rgba(255, 255, 255, 0.2); padding: 1rem 2rem; border-radius: 8px; text-decoration: none; font-weight: 500;">Back to Home</a>
+          </div>
+        </div>
+      `;
+      
+      // Add direct login functionality
+      document.getElementById('direct-login-btn').addEventListener('click', () => {
+        // Store current URL to redirect back after login
+        localStorage.setItem('redirectAfterLogin', window.location.href);
+        login();
+      });
+      
+      appContainer.style.display = 'block';
+    }
+    
+    // Show completion modal with certificate
+    function showCompletionModal() {
+      const modal = document.createElement('div');
+      modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        animation: fadeIn 0.3s ease;
+      `;
+      
+      modal.innerHTML = `
+        <div style="background: white; border-radius: 20px; padding: 3rem; max-width: 500px; width: 90%; text-align: center; position: relative; animation: slideUp 0.5s ease;">
+          <button id="close-modal" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #999;">&times;</button>
+          
+          <div style="font-size: 4rem; margin-bottom: 1rem; animation: bounce 1s ease infinite;">🎉</div>
+          <h2 style="color: var(--primary); margin-bottom: 1rem; font-size: 2rem;">Congratulations!</h2>
+          <p style="margin-bottom: 2rem; color: var(--text-secondary); font-size: 1.1rem;">You've completed all 100 VUIchallenge exercises and achieved Champion level!</p>
+          
+          <button id="download-certificate" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; padding: 1rem 2rem; border-radius: 12px; font-weight: 600; cursor: pointer; margin-bottom: 1rem; font-family: 'Poppins', sans-serif;">📜 Download Certificate</button>
+          
+          <div style="font-size: 0.9rem; color: var(--text-secondary);">Share your achievement with the world!</div>
+        </div>
+        
+        <style>
+          @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+          @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+          }
+          @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+          }
+        </style>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      // Close modal
+      document.getElementById('close-modal').addEventListener('click', () => {
+        modal.remove();
+      });
+      
+      // Download certificate
+      document.getElementById('download-certificate').addEventListener('click', () => {
+        generateCertificate();
+      });
+      
+      // Close on background click
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.remove();
+        }
+      });
+    }
+    
+    // Generate and download certificate
+    function generateCertificate() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 800;
+      canvas.height = 600;
+      const ctx = canvas.getContext('2d');
+      
+      // Background gradient
+      const gradient = ctx.createLinearGradient(0, 0, 800, 600);
+      gradient.addColorStop(0, '#ffffff');
+      gradient.addColorStop(0.5, '#fdf2ff');
+      gradient.addColorStop(1, '#fae5ff');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, 800, 600);
+      
+      // Border
+      ctx.strokeStyle = '#fd85e4';
+      ctx.lineWidth = 8;
+      ctx.strokeRect(20, 20, 760, 560);
+      
+      // Inner border
+      ctx.strokeStyle = '#a155b9';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(40, 40, 720, 520);
+      
+      // Title
+      ctx.fillStyle = '#fd85e4';
+      ctx.font = 'bold 48px Poppins, Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('Certificate of Completion', 400, 120);
+      
+      // Main text
+      ctx.fillStyle = '#1a202c';
+      ctx.font = '20px Poppins, Arial';
+      ctx.fillText('This certifies that', 400, 200);
+      
+      // User name
+      ctx.fillStyle = '#fd85e4';
+      ctx.font = 'bold 36px Poppins, Arial';
+      ctx.fillText(currentUser.name || 'VUI Designer', 400, 260);
+      
+      // Achievement text
+      ctx.fillStyle = '#1a202c';
+      ctx.font = '20px Poppins, Arial';
+      ctx.fillText('has successfully completed all', 400, 310);
+      ctx.fillText('100 VUIchallenge exercises', 400, 340);
+      ctx.fillText('and achieved Champion level', 400, 370);
+      
+      // Date
+      ctx.fillStyle = '#4a5568';
+      ctx.font = '16px Poppins, Arial';
+      const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+      ctx.fillText(`Completed on ${today}`, 400, 430);
+      
+      // Signature line (left)
+      ctx.fillStyle = '#1a202c';
+      ctx.font = '18px Poppins, Arial';
+      ctx.textAlign = 'left';
+      ctx.fillText('Jesús Martín', 150, 510);
+      ctx.font = '14px Poppins, Arial';
+      ctx.fillStyle = '#4a5568';
+      ctx.fillText('Creator of VUIchallenge', 150, 530);
+      
+      // VUIchallenge signature (right)
+      ctx.fillStyle = '#fd85e4';
+      ctx.font = 'bold 20px Poppins, Arial';
+      ctx.textAlign = 'right';
+      ctx.fillText('VUIchallenge', 650, 520);
+      
+      // Download certificate
+      const link = document.createElement('a');
+      link.download = `VUIchallenge-Certificate-${currentUser.name || 'Champion'}.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+    }
+    
+    // Countdown timer for challenges unlocking in 1 day
+    function startCountdownTimers() {
+      const countdownElements = document.querySelectorAll('.countdown-timer');
+      
+      countdownElements.forEach(element => {
+        const challengeId = parseInt(element.dataset.challengeId);
+        const startDate = new Date(localStorage.getItem('startDate'));
+        const unlockDate = new Date(startDate);
+        unlockDate.setDate(startDate.getDate() + challengeId - 1);
+        unlockDate.setHours(0, 0, 0, 0); // Unlock at midnight
+        
+        function updateCountdown() {
+          const now = new Date();
+          const timeLeft = unlockDate - now;
+          
+          if (timeLeft <= 0) {
+            element.textContent = 'Available now!';
+            setTimeout(() => location.reload(), 1000);
+            return;
+          }
+          
+          const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+          const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+          
+          element.textContent = `Unlocks in ${hours}h ${minutes}m ${seconds}s`;
+        }
+        
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+      });
+    }
+    
+    // Initialize the app
+    init();
+  </script>
+  
+  <script src="cookie-banner.js"></script>
+</body>
+</html>

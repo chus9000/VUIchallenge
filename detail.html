@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Challenge Detail - Daily Challenge App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- Favicon -->
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon/favicon-16x16.png">
+  <link rel="manifest" href="assets/img/favicon/site.webmanifest">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:title" content="VUIchallenge">
+  <meta property="og:description" content="Daily free challenges for you to learn VUI and conversational design">
+  <meta property="og:image" content="assets/img/logo.png">
+  <meta property="og:url" content="detail.html">
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@VUIchallenge">
+  <meta name="twitter:creator" content="@chus9000">
+  <meta name="twitter:url" content="detail.html">
+  <meta name="twitter:title" content="VUIchallenge">
+  <meta name="twitter:description" content="Daily free challenges for you to learn VUI and conversational design">
+  <meta name="twitter:image" content="assets/img/logo.png">
+  <meta name="twitter:image:alt" content="Logo for VUIchallenge, two speech bubbles in blue and pink intersect creating a rounded purple space.">
+  
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-N8QRSVPK');</script>
+  <!-- End Google Tag Manager -->
+  <style>
+    :root {
+      --primary: #fd85e4;
+      --primary-light: #fe9de9;
+      --secondary: #a155b9;
+      --background: #111827;
+      --card-bg: rgba(255, 255, 255, 0.7);
+      --text: #1a202c;
+      --text-secondary: #4a5568;
+      --success: #65cdc9;
+      --locked: #6b7280;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #ffffff 0%, #fef7ff 25%, #fdf2ff 50%, #fcecff 75%, #fae5ff 100%);
+      color: var(--text);
+      min-height: 100vh;
+      background-attachment: fixed;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    .glass {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .text-gradient {
+      background: linear-gradient(135deg, var(--primary-light), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-fill-color: transparent;
+    }
+    
+    .back-button {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    
+    .back-button:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+    
+    .detail-card {
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    
+    .challenge-header {
+      margin-bottom: 2rem;
+    }
+    
+    .challenge-header h2 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .challenge-day {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+    }
+    
+    .challenge-description {
+      margin-bottom: 2rem;
+      line-height: 1.6;
+      font-size: 1rem;
+    }
+    
+    .completion-checkbox {
+      display: flex;
+      align-items: center;
+      margin: 2rem 0;
+      padding: 1.5rem;
+      background: linear-gradient(135deg, rgba(253, 133, 228, 0.1), rgba(161, 85, 185, 0.1));
+      border: 2px solid rgba(253, 133, 228, 0.3);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .completion-checkbox:hover {
+      border-color: var(--primary);
+      background: linear-gradient(135deg, rgba(253, 133, 228, 0.15), rgba(161, 85, 185, 0.15));
+      transform: translateY(-2px);
+    }
+    
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .custom-checkbox {
+      width: 28px;
+      height: 28px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    
+    .custom-checkbox.checked {
+      background: var(--success);
+      border-color: var(--success);
+    }
+    
+    .custom-checkbox.checked:after {
+      content: '✓';
+      color: white;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    
+    .checkbox-label {
+      font-size: 1.1rem;
+    }
+    
+    .challenge-tip {
+      margin-top: 2rem;
+      padding: 0;
+    }
+    
+    .challenge-tip h4 {
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    
+    .challenge-tip p {
+      color: var(--text-secondary);
+      line-height: 1.5;
+      font-size: 0.85rem;
+      font-style: italic;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      font-size: 1.2rem;
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N8QRSVPK"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+  <div class="container">
+    <a href="app.html" class="back-button">← Back to challenges</a>
+    
+    <div id="loading" class="loading">Loading challenge...</div>
+    
+    <div id="challenge-detail" style="display: none;">
+      <div class="detail-card glass">
+        <div class="challenge-header">
+          <h2 class="text-gradient" id="detail-title-with-day"></h2>
+        </div>
+        
+        <h3 class="section-title">Challenge</h3>
+        <div class="challenge-description" id="detail-description"></div>
+        
+        <h3 class="section-title">Jesús' tip</h3>
+        <p id="tip-text" class="tip-text"></p>
+        
+        <h3 class="section-title">Your Notes</h3>
+        <p class="notes-description">Jot down your ideas and solutions here. This is saved in the cloud and synced across your devices. You will not be getting feedback for anything you put in here :)</p>
+        <textarea id="challenge-notes" class="notes-textarea" placeholder="Write your thoughts, ideas, or solution here..."></textarea>
+        <div class="notes-save-container">
+          <button id="save-notes-btn" class="save-notes-btn" disabled>Save</button>
+        </div>
+      </div>
+      
+      <!-- Completion Section -->
+      <div class="completion-section" id="completion-container">
+        <div class="completion-label" id="checkbox-label">Mark challenge as completed</div>
+        <div class="completion-checkbox-wrapper" id="completion-checkbox">
+          <div class="custom-checkbox" id="custom-checkbox"></div>
+        </div>
+      </div>
+      
+      <!-- Toast Container -->
+      <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 1000;"></div>
+      
+      <!-- Navigation Cards -->
+      <div id="navigation-cards" class="navigation-cards"></div>
+      
+      <div class="coffee-footer glass">
+        <div class="coffee-content">
+          <!-- Profile Image -->
+          <img src="assets/img/gallery/jesus-martin.jpg" alt="Jesús Martín" class="coffee-avatar">
+          
+          <!-- Speech Bubble -->
+          <div class="speech-bubble">
+            <div class="speech-author">Jesús Martín</div>
+            <div id="coffee-message" class="speech-message"></div>
+          </div>
+          
+          <!-- Buy Me a Coffee Button -->
+          <a href="https://buymeacoffee.com/jesusmartin" target="_blank" class="coffee-btn">
+            ☕ Buy me a coffee
+          </a>
+        </div>
+
+      </div>
+      
+      <!-- Copyright Footer -->
+      <footer>
+        <p>Made with love © 2021 - <span class="current-year"></span> <a href="https://jesusmartin.eu" target="_blank">jesusmartin.eu</a></p>
+        <p style="margin-top: 0.5rem;">Any feedback? <a href="mailto:hi@jesusmartin.eu">reach out to hi@jesusmartin.eu</a></p>
+      </footer>
+      <script>document.querySelector('.current-year').textContent = new Date().getFullYear();</script>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script>
+    // Random coffee messages
+    const coffeeMessages = [
+      "If you love the #VUIchallenge and want to support the project, I'd love a coffee.",
+      "If you are a #VUIchallenge lover, I'd appreciate a coffee to support the project.",
+      "If you 😍 the #VUIchallenge and want to support the project, consider buying me a coffee.",
+      "If any of your personalities wants to support the #VUIchallenge, a coffee would be great.",
+      "If you love the #VUIchallenge branding, support the project by getting me a coffee.",
+      "Getting a coffee is still available from different platforms and devices.",
+      "I wouldn't mind if you support me with a pizza slice or a cup of coffee.",
+      "Rock, scissors, and paper taste all way worse than coffee for me.",
+      "If you love numbers and #VUIchallenge, support the project by buying me a coffee.",
+      "There's coffee for when it's cold and when it's hot. Be nice and get some for me.",
+      "Multi-love for the #VUIchallenge? A single coffee would be awesome for me.",
+      "If the #VUIchallenge is a lighthouse for you, support it by getting me a coffee.",
+      "If you love the #VUIchallenge at any time, you can get me a coffee.",
+      "A coffee Today? Tomorrow? Next week? I'm always up for a coffee.",
+      "Are you engaged to get me a coffee yet?",
+      "If you believe in horoscopes, you believe in supporting the #VUIchallenge.",
+      "If you don't want to sleep, and want to share a drink, you can get me a coffee.",
+      "Fact: supporting the #VUIchallenge is a great way to show love.",
+      "The secret code is*********E E. You can use this code to make me happy by getting one",
+      "You have time left for supporting the project by buying me a coffee",
+      "Beep, beep, you have one alarm for buying me a coffee",
+      "You know what to do when you buy me a coffee",
+      "I don't need you to buy me a house, but a coffee would be nice",
+      "Let there be light! And let there be coffee",
+      "First get milk, second get me a coffee",
+      "This is how I am and here you have the coffee I could drink",
+      "My business model is a no-brainer. Just coffee to support me",
+      "What's the voice you would use for asking for coffee for me",
+      "In the morning I take coffee, beer in the afternoon. You can buy me any of those",
+      "I would open the door to any coffee you want to share with me",
+      "Have you ever played basketball with an empty coffee cup? I would love to",
+      "There's a character limit for SMS but never for coffee",
+      "You, me, one smart lightbulb and a cup of coffee",
+      "My pets drink coffee too. Show love and support the coffee for them as well",
+      "Card games are great, but I think that I'm better at drinking coffee",
+      "You can get me a coffee in a food truck or right on this platform",
+      "At what temperature would you ask for a coffee for me?",
+      "Any story you know where a prince gets coffee for someone?",
+      "A good coffee will help me pass any interview",
+      "If you like the project, support me. I'm not allergic to coffee",
+      "I always wear a pair of jeans and carry a cup of coffee",
+      "If you are happy and you know it buy me a coffee",
+      "Yes! This is also an ad for you to support the project",
+      "You can get me a coffee now or later from mobile",
+      "Supporting VUIchallenge by buying a coffee is for all audiences",
+      "The ingredients for coffee are simple: coffee beans and love. Show some and buy me one",
+      "There are many different coffees you can order, and many you can buy for me",
+      "How much is a coffee in your currency?",
+      "Is there a boardgame where you end up getting someone a coffee?",
+      "Coffee shops could be considered restaurants... Book one for me!",
+      "What can come with milk and sugar? A coffee for me!",
+      "You cannot get me a coffee with your voice, but you can do it here.",
+      "Coffee, café, caffé, kaffee, no matter the language I would love to have one",
+      "If you love this screen experience you can buy me an online coffee",
+      "You or the other player can support the project and buy me a coffee",
+      "I'm the creator of VUIchallenge and you can support me here",
+      "There's no time limit for you to buy me a coffee",
+      "Send an appreciation message or just a coffee",
+      "A coffee can be a love message",
+      "1,2,3,4 can be a voice PIN or the number of weekly coffees you buy me",
+      "Vroom, vroom,... that's the coffee you bought me coming!",
+      "Today, on your favorite channel, you will not watch me enjoying the coffee you bought",
+      "Wouldn't you pay a coffee for learning language and VUI skills?",
+      "What about a coffee before we start the day and the make-up session?",
+      "I would love your support for buying me a daily coffee",
+      "Did you know that there's an international coffee day? Let's celebrate it!",
+      "I'll remind you to support the project and buy me a coffee tomorrow as I did yesterday",
+      "Asking you to buy me a coffee is my way to avoid a premium paid service",
+      "Fruit ✅. Milk ✅. A well deserved coffee for me",
+      "Food for thought and coffee for me",
+      "The due date for my coffee is everyday",
+      "Run! There's someone coming without their coffee!",
+      "My work now is to find a coffee, can you help?",
+      "This is me. For sure. And this is where you can buy me a coffee",
+      "You have a pending notification reminding you to buy me a coffee",
+      "You know what time it is? Time for my coffee!",
+      "No coffee no workout. Buy me one!",
+      "I want to start a call with you and my coffee maker"
+
+    ];
+    
+    // Set random message on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      const messageEl = document.getElementById('coffee-message');
+      if (messageEl) {
+        const randomMessage = coffeeMessages[Math.floor(Math.random() * coffeeMessages.length)];
+        messageEl.textContent = randomMessage;
+      }
+    });
+  </script>
+  <script>
+    // Load challenges.js with aggressive cache busting
+    (function() {
+      const script = document.createElement('script');
+      script.src = 'challenges.js?v=' + Date.now() + '&r=' + Math.random() + '&bust=' + performance.now();
+      script.onload = function() {
+        console.log('Challenges loaded fresh in detail page');
+      };
+      document.head.appendChild(script);
+    })();
+  </script>
+  <script>
+    // Firebase references with error handling
+    let auth, db, userChallengesRef = null;
+    let currentUser = null;
+    
+    try {
+      auth = firebase.auth();
+      db = firebase.firestore();
+    } catch (error) {
+      console.log('Firebase initialization failed:', error);
+    }
+    
+    // Get challenge ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const challengeId = parseInt(urlParams.get('id'));
+    
+    // DOM elements
+    const loadingEl = document.getElementById('loading');
+    const detailEl = document.getElementById('challenge-detail');
+    // Removed separate title and day elements
+    const descriptionEl = document.getElementById('detail-description');
+    const checkboxEl = document.getElementById('completion-checkbox');
+    const customCheckboxEl = document.getElementById('custom-checkbox');
+    const labelEl = document.getElementById('checkbox-label');
+    const tipEl = document.getElementById('tip-text');
+    
+    let currentChallenge = null;
+    let allChallenges = [];
+    
+    // Initialize
+    function init() {
+      if (!challengeId || challengeId < 1 || challengeId > 100) {
+        window.location.href = 'app.html';
+        return;
+      }
+      
+      // Check Firebase auth state
+      if (auth) {
+        auth.onAuthStateChanged((user) => {
+          if (user) {
+            // User is signed in
+            currentUser = {
+              uid: user.uid,
+              name: user.displayName,
+              email: user.email,
+              avatar: user.photoURL
+            };
+            
+            if (db) {
+              userChallengesRef = db.collection('userChallenges').doc(user.uid);
+            }
+            
+            loadChallenge();
+          } else {
+            // User is signed out
+            showLoginPrompt();
+          }
+        });
+      } else {
+        // Firebase not available
+        showFirebaseError();
+      }
+    }
+    
+    // Load challenge data
+    function loadChallenge() {
+      userChallengesRef.get().then((doc) => {
+        if (doc.exists && doc.data().challenges) {
+          // User has existing challenges in Firebase
+          allChallenges = doc.data().challenges;
+        } else {
+          // Generate new challenges and save to Firebase
+          allChallenges = generateChallenges(100);
+          const startDate = new Date().toISOString();
+          
+          userChallengesRef.set({
+            challenges: allChallenges,
+            startDate: startDate
+          });
+          
+          localStorage.setItem('startDate', startDate);
+        }
+        
+        // Update unlock status
+        const startDate = doc.exists && doc.data().startDate ? new Date(doc.data().startDate) : new Date(localStorage.getItem('startDate'));
+        const today = new Date();
+        const daysSinceStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+        
+        allChallenges.forEach((challenge, index) => {
+          if (index <= daysSinceStart) {
+            challenge.unlocked = true;
+          }
+        });
+        
+        // Get current challenge
+        currentChallenge = allChallenges[challengeId - 1];
+        
+        // Check if challenge is unlocked
+        if (!currentChallenge.unlocked) {
+          showLockedChallenge();
+          return;
+        }
+        
+        // Display challenge
+        displayChallenge();
+        
+        // Generate navigation cards
+        generateNavigationCards();
+      }).catch((error) => {
+        console.error("Error loading challenges:", error);
+        // Fallback to localStorage
+        const savedChallenges = localStorage.getItem('challenges');
+        if (savedChallenges) {
+          allChallenges = JSON.parse(savedChallenges);
+          
+          // Update unlock status for fallback
+          const startDate = new Date(localStorage.getItem('startDate'));
+          const today = new Date();
+          const daysSinceStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+          
+          allChallenges.forEach((challenge, index) => {
+            if (index <= daysSinceStart) {
+              challenge.unlocked = true;
+            }
+          });
+          
+          currentChallenge = allChallenges[challengeId - 1];
+          
+          // Check if challenge is unlocked
+          if (!currentChallenge.unlocked) {
+            showLockedChallenge();
+            return;
+          }
+          
+          displayChallenge();
+          generateNavigationCards();
+        }
+      });
+    }
+    
+    // Display challenge details
+    function displayChallenge() {
+      const titleWithDayEl = document.getElementById('detail-title-with-day');
+      titleWithDayEl.textContent = `Day ${currentChallenge.id}: ${currentChallenge.title}`;
+      descriptionEl.innerHTML = parseMarkdown(currentChallenge.description);
+      tipEl.innerHTML = parseMarkdown(currentChallenge.tip);
+      
+      updateCheckbox();
+      
+      // Add event listener to the full container
+      const container = document.getElementById('completion-container');
+      container.addEventListener('click', toggleCompletion);
+      
+      // Setup notes functionality
+      setupNotes();
+      
+      // Show content
+      loadingEl.style.display = 'none';
+      detailEl.style.display = 'block';
+    }
+    
+    // Update checkbox state
+    function updateCheckbox() {
+      const container = document.getElementById('completion-container');
+      if (currentChallenge.completed) {
+        // Completed state: pink container, green check
+        container.style.background = 'linear-gradient(135deg, rgba(253, 133, 228, 0.1), rgba(161, 85, 185, 0.1))';
+        container.style.border = '2px solid var(--primary)';
+        customCheckboxEl.style.background = 'var(--success)';
+        customCheckboxEl.style.border = '2px solid var(--success)';
+        customCheckboxEl.innerHTML = '✓';
+        customCheckboxEl.style.color = 'white';
+        customCheckboxEl.style.fontSize = '1.5rem';
+        customCheckboxEl.style.fontWeight = 'bold';
+        labelEl.textContent = 'Challenge completed';
+        labelEl.style.color = 'var(--primary)';
+        labelEl.style.fontWeight = '500';
+      } else {
+        // Uncompleted state: white container and checkbox
+        container.style.background = 'var(--card-bg)';
+        container.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+        customCheckboxEl.style.background = 'white';
+        customCheckboxEl.style.border = '2px solid #ccc';
+        customCheckboxEl.innerHTML = '';
+        customCheckboxEl.style.color = 'transparent';
+        labelEl.textContent = 'Mark challenge as completed';
+        labelEl.style.color = 'var(--text)';
+        labelEl.style.fontWeight = '500';
+      }
+    }
+    
+    // Toggle completion status
+    function toggleCompletion() {
+      currentChallenge.completed = !currentChallenge.completed;
+      
+      // Update in allChallenges array
+      allChallenges[challengeId - 1].completed = currentChallenge.completed;
+      
+      // Save to localStorage
+      localStorage.setItem('challenges', JSON.stringify(allChallenges));
+      
+      // Update UI
+      updateCheckbox();
+      
+      // Check if this was the 100th challenge completed
+      const completedCount = allChallenges.filter(c => c.completed).length;
+      if (currentChallenge.completed && completedCount === 100 && !localStorage.getItem('certificateShown')) {
+        showCompletionModal();
+        localStorage.setItem('certificateShown', 'true');
+      }
+    }
+    
+    // Generate navigation cards
+    function generateNavigationCards() {
+      const navContainer = document.getElementById('navigation-cards');
+      const prevChallenge = challengeId > 1 ? allChallenges[challengeId - 2] : null;
+      const nextChallenge = challengeId < 100 ? allChallenges[challengeId] : null;
+      
+      let cardsHtml = '';
+      
+      // Previous challenge card
+      if (prevChallenge) {
+        cardsHtml += `
+          <div class="nav-card glass" style="padding: 1rem; cursor: pointer; transition: all 0.3s ease; opacity: ${prevChallenge.unlocked ? '1' : '0.6'};" onclick="${prevChallenge.unlocked ? `window.location.href='detail.html?id=${prevChallenge.id}'` : ''}">
+            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">← Previous</div>
+            <div style="font-size: 0.9rem; font-weight: 500; margin-bottom: 0.5rem;">${prevChallenge.title}</div>
+            <div style="font-size: 0.7rem; color: var(--text-secondary);">Day ${prevChallenge.id}</div>
+            ${prevChallenge.completed ? '<div style="position: absolute; top: 0.5rem; right: 0.5rem; color: var(--success); font-size: 0.8rem;">✓</div>' : ''}
+          </div>
+        `;
+      } else {
+        cardsHtml += '<div></div>'; // Empty space
+      }
+      
+      // Next challenge card
+      if (nextChallenge) {
+        const startDate = new Date(localStorage.getItem('startDate'));
+        const today = new Date();
+        const daysSinceStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+        const daysUntilUnlock = nextChallenge.id - daysSinceStart - 1;
+        
+        cardsHtml += `
+          <div class="nav-card glass" style="padding: 1rem; cursor: ${nextChallenge.unlocked ? 'pointer' : 'not-allowed'}; transition: all 0.3s ease; opacity: ${nextChallenge.unlocked ? '1' : '0.6'}; position: relative;" onclick="${nextChallenge.unlocked ? `window.location.href='detail.html?id=${nextChallenge.id}'` : ''}">
+            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Next →</div>
+            <div style="font-size: 0.9rem; font-weight: 500; margin-bottom: 0.5rem;">${nextChallenge.title}</div>
+            <div style="font-size: 0.7rem; color: var(--text-secondary);">
+              ${nextChallenge.unlocked 
+                ? `Day ${nextChallenge.id}` 
+                : `Unlocks in ${daysUntilUnlock} day${daysUntilUnlock > 1 ? 's' : ''}`
+              }
+            </div>
+            ${nextChallenge.completed ? '<div style="position: absolute; top: 0.5rem; right: 0.5rem; color: var(--success); font-size: 0.8rem;">✓</div>' : ''}
+            ${!nextChallenge.unlocked ? '<div style="position: absolute; top: 0.5rem; right: 0.5rem; color: var(--text-secondary); font-size: 0.8rem;">🔒</div>' : ''}
+          </div>
+        `;
+      }
+      
+      navContainer.innerHTML = cardsHtml;
+      
+      // Add hover effects
+      document.querySelectorAll('.nav-card').forEach(card => {
+        card.addEventListener('mouseenter', () => {
+          if (card.style.cursor === 'pointer') {
+            card.style.transform = 'translateY(-2px)';
+            card.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+          }
+        });
+        card.addEventListener('mouseleave', () => {
+          card.style.transform = '';
+          card.style.boxShadow = '';
+        });
+      });
+    }
+    
+    // Setup notes functionality
+    function setupNotes() {
+      const notesTextarea = document.getElementById('challenge-notes');
+      const saveBtn = document.getElementById('save-notes-btn');
+      let saveTimeout;
+      
+      // Load saved notes from challenge data
+      const savedNotes = currentChallenge.notes || '';
+      notesTextarea.value = savedNotes;
+      window.lastSavedValue = savedNotes;
+      autoResize(notesTextarea);
+      
+      // Check if save button should be enabled
+      function updateSaveButton() {
+        const hasChanges = notesTextarea.value !== window.lastSavedValue;
+        saveBtn.disabled = !hasChanges;
+        saveBtn.style.opacity = hasChanges ? '1' : '0.5';
+        saveBtn.style.cursor = hasChanges ? 'pointer' : 'not-allowed';
+      }
+      
+      // Auto-save on input with debounce
+      notesTextarea.addEventListener('input', function() {
+        console.log('Input detected:', this.value); // Debug
+        autoResize(this);
+        updateSaveButton();
+        
+        // Clear previous timeout
+        clearTimeout(saveTimeout);
+        
+        // Auto-save after 3 seconds of no typing
+        saveTimeout = setTimeout(() => {
+          console.log('Auto-saving...'); // Debug
+          if (this.value !== window.lastSavedValue) {
+            saveNotes(this.value, true);
+          }
+        }, 3000);
+      });
+      
+      // Manual save button
+      saveBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log('Save button clicked'); // Debug
+        if (!this.disabled) {
+          clearTimeout(saveTimeout);
+          saveNotes(notesTextarea.value, false);
+        }
+      });
+      
+      // Focus styling
+      notesTextarea.addEventListener('focus', function() {
+        this.style.borderColor = 'var(--primary)';
+      });
+      
+      notesTextarea.addEventListener('blur', function() {
+        this.style.borderColor = 'rgba(253, 133, 228, 0.4)';
+      });
+      
+      // Update save button state initially
+      updateSaveButton();
+    }
+    
+    // Save notes to Firebase
+    function saveNotes(notes, isAutoSave = false) {
+      console.log('saveNotes called with:', notes, isAutoSave); // Debug
+      
+      // Update current challenge
+      currentChallenge.notes = notes;
+      
+      // Update in allChallenges array
+      allChallenges[challengeId - 1].notes = notes;
+      
+      // For now, save to localStorage (Firebase can be added later)
+      localStorage.setItem('challenges', JSON.stringify(allChallenges));
+      
+      // Update last saved value
+      window.lastSavedValue = notes;
+      
+      // Update save button state
+      const saveBtn = document.getElementById('save-notes-btn');
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.style.opacity = '0.5';
+        saveBtn.style.cursor = 'not-allowed';
+      }
+      
+      // Show toast notification
+      showToast(isAutoSave ? 'Notes auto-saved' : 'Notes saved successfully');
+      
+      console.log('Notes saved successfully'); // Debug
+    }
+    
+    // Show toast notification
+    function showToast(message) {
+      const toastContainer = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      toast.style.cssText = `
+        background: var(--success);
+        color: white;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+      `;
+      
+      toast.textContent = message;
+      toastContainer.appendChild(toast);
+      
+      // Animate in
+      setTimeout(() => {
+        toast.style.transform = 'translateX(0)';
+      }, 100);
+      
+      // Remove after 3 seconds
+      setTimeout(() => {
+        toast.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+          if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+          }
+        }, 300);
+      }, 3000);
+    }
+    
+    // Auto-resize textarea
+    function autoResize(textarea) {
+      textarea.style.height = 'auto';
+      const newHeight = Math.min(textarea.scrollHeight, 200); // Max 10 lines (~200px)
+      textarea.style.height = Math.max(newHeight, 60) + 'px'; // Min 3 lines (~60px)
+      
+      // Add scroll if content exceeds max height
+      if (textarea.scrollHeight > 200) {
+        textarea.style.overflowY = 'auto';
+      } else {
+        textarea.style.overflowY = 'hidden';
+      }
+    }
+    
+    // Show Firebase error
+    function showFirebaseError() {
+      loadingEl.style.display = 'none';
+      detailEl.innerHTML = `
+        <div class="detail-card glass" style="text-align: center; padding: 3rem 2rem;">
+          <div style="font-size: 4rem; margin-bottom: 1rem;">⚠️</div>
+          <h2 class="text-gradient" style="margin-bottom: 1rem;">Authentication Error</h2>
+          <p style="font-size: 1.2rem; margin-bottom: 2rem; color: var(--text-secondary);">Firebase authentication is not available. Please check your internet connection and try again.</p>
+          <button onclick="location.reload()" style="display: inline-block; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 1rem 2rem; border-radius: 8px; border: none; font-weight: 500; margin-right: 1rem; cursor: pointer; font-family: 'Poppins', sans-serif;">Retry</button>
+          <a href="index.html" style="display: inline-block; background: transparent; color: var(--text); border: 1px solid rgba(255, 255, 255, 0.2); padding: 1rem 2rem; border-radius: 8px; text-decoration: none; font-weight: 500;">Back to Home</a>
+        </div>
+      `;
+      detailEl.style.display = 'block';
+    }
+    
+    // Show login prompt for non-authenticated users
+    function showLoginPrompt() {
+      loadingEl.style.display = 'none';
+      detailEl.innerHTML = `
+        <div class="detail-card glass" style="text-align: center; padding: 3rem 2rem;">
+          <div style="font-size: 4rem; margin-bottom: 1rem;">🔐</div>
+          <h2 class="text-gradient" style="margin-bottom: 1rem;">Login Required</h2>
+          <p style="font-size: 1.2rem; margin-bottom: 2rem; color: var(--text-secondary);">You need to sign in to access the VUIchallenge</p>
+          <button id="detail-login-btn" style="display: inline-block; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 1rem 2rem; border-radius: 8px; border: none; font-weight: 500; margin-right: 1rem; cursor: pointer; font-family: 'Poppins', sans-serif;">Sign In with Google</button>
+          <a href="index.html" style="display: inline-block; background: transparent; color: var(--text); border: 1px solid rgba(255, 255, 255, 0.2); padding: 1rem 2rem; border-radius: 8px; text-decoration: none; font-weight: 500;">Back to Home</a>
+        </div>
+      `;
+      
+      // Add direct login functionality
+      document.getElementById('detail-login-btn').addEventListener('click', () => {
+        // Store current URL to redirect back after login
+        localStorage.setItem('redirectAfterLogin', window.location.href);
+        // Redirect to app.html for login, which will redirect back here
+        window.location.href = 'app.html?login=true';
+      });
+      
+      detailEl.style.display = 'block';
+    }
+    
+    // Show locked challenge message
+    function showLockedChallenge() {
+      const startDate = new Date(localStorage.getItem('startDate') || new Date());
+      const today = new Date();
+      const daysSinceStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+      const daysUntilUnlock = challengeId - daysSinceStart - 1;
+      
+      loadingEl.style.display = 'none';
+      detailEl.innerHTML = `
+        <div class="detail-card glass" style="text-align: center; padding: 3rem 2rem;">
+          <div style="font-size: 4rem; margin-bottom: 1rem;">🔒</div>
+          <h2 class="text-gradient" style="margin-bottom: 1rem;">Challenge Locked</h2>
+          <p style="font-size: 1.2rem; margin-bottom: 2rem; color: var(--text-secondary);">This challenge will unlock in <strong>${daysUntilUnlock} day${daysUntilUnlock > 1 ? 's' : ''}</strong></p>
+          <p style="margin-bottom: 2rem; color: var(--text-secondary);">Come back tomorrow to access new challenges!</p>
+          <a href="app.html" style="display: inline-block; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 1rem 2rem; border-radius: 8px; text-decoration: none; font-weight: 500;">Back to Challenges</a>
+        </div>
+      `;
+      detailEl.style.display = 'block';
+    }
+    
+    // Show completion modal with certificate (copied from app.html)
+    function showCompletionModal() {
+      const modal = document.createElement('div');
+      modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        animation: fadeIn 0.3s ease;
+      `;
+      
+      modal.innerHTML = `
+        <div style="background: white; border-radius: 20px; padding: 3rem; max-width: 500px; width: 90%; text-align: center; position: relative; animation: slideUp 0.5s ease;">
+          <button id="close-modal" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #999;">&times;</button>
+          
+          <div style="font-size: 4rem; margin-bottom: 1rem; animation: bounce 1s ease infinite;">🎉</div>
+          <h2 style="color: var(--primary); margin-bottom: 1rem; font-size: 2rem;">Congratulations!</h2>
+          <p style="margin-bottom: 2rem; color: var(--text-secondary); font-size: 1.1rem;">You've completed all 100 VUIchallenge exercises and achieved Champion level!</p>
+          
+          <button id="download-certificate" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; padding: 1rem 2rem; border-radius: 12px; font-weight: 600; cursor: pointer; margin-bottom: 1rem; font-family: 'Poppins', sans-serif;">📜 Download Certificate</button>
+          
+          <div style="font-size: 0.9rem; color: var(--text-secondary);">Share your achievement with the world!</div>
+        </div>
+        
+        <style>
+          @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+          @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+          }
+          @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+          }
+        </style>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      // Close modal
+      document.getElementById('close-modal').addEventListener('click', () => {
+        modal.remove();
+      });
+      
+      // Download certificate
+      document.getElementById('download-certificate').addEventListener('click', () => {
+        generateCertificate();
+      });
+      
+      // Close on background click
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.remove();
+        }
+      });
+    }
+    
+    // Generate and download certificate
+    function generateCertificate() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 800;
+      canvas.height = 600;
+      const ctx = canvas.getContext('2d');
+      
+      // Background gradient
+      const gradient = ctx.createLinearGradient(0, 0, 800, 600);
+      gradient.addColorStop(0, '#ffffff');
+      gradient.addColorStop(0.5, '#fdf2ff');
+      gradient.addColorStop(1, '#fae5ff');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, 800, 600);
+      
+      // Border
+      ctx.strokeStyle = '#fd85e4';
+      ctx.lineWidth = 8;
+      ctx.strokeRect(20, 20, 760, 560);
+      
+      // Inner border
+      ctx.strokeStyle = '#a155b9';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(40, 40, 720, 520);
+      
+      // Title
+      ctx.fillStyle = '#fd85e4';
+      ctx.font = 'bold 48px Poppins, Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('Certificate of Completion', 400, 120);
+      
+      // Main text
+      ctx.fillStyle = '#1a202c';
+      ctx.font = '20px Poppins, Arial';
+      ctx.fillText('This certifies that', 400, 200);
+      
+      // User name
+      ctx.fillStyle = '#fd85e4';
+      ctx.font = 'bold 36px Poppins, Arial';
+      ctx.fillText(currentUser ? currentUser.name : 'VUI Designer', 400, 260);
+      
+      // Achievement text
+      ctx.fillStyle = '#1a202c';
+      ctx.font = '20px Poppins, Arial';
+      ctx.fillText('has successfully completed all', 400, 310);
+      ctx.fillText('100 VUIchallenge exercises', 400, 340);
+      ctx.fillText('and achieved Champion level', 400, 370);
+      
+      // Date
+      ctx.fillStyle = '#4a5568';
+      ctx.font = '16px Poppins, Arial';
+      const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+      ctx.fillText(`Completed on ${today}`, 400, 430);
+      
+      // Signature line (left)
+      ctx.fillStyle = '#1a202c';
+      ctx.font = '18px Poppins, Arial';
+      ctx.textAlign = 'left';
+      ctx.fillText('Jesús Martín', 150, 510);
+      ctx.font = '14px Poppins, Arial';
+      ctx.fillStyle = '#4a5568';
+      ctx.fillText('Creator of VUIchallenge', 150, 530);
+      
+      // VUIchallenge signature (right)
+      ctx.fillStyle = '#fd85e4';
+      ctx.font = 'bold 20px Poppins, Arial';
+      ctx.textAlign = 'right';
+      ctx.fillText('VUIchallenge', 650, 520);
+      
+      // Download certificate
+      const link = document.createElement('a');
+      link.download = `VUIchallenge-Certificate-${currentUser ? currentUser.name : 'Champion'}.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+    }
+    
+    // Simple markdown parser for links
+    function parseMarkdown(text) {
+      return text
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color: var(--primary); text-decoration: underline;">$1</a>')
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    }
+    
+    // Initialize
+    init();
+  </script>
+  
+  <script src="cookie-banner.js"></script>
+</body>
+</html>
