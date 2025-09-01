@@ -94,14 +94,33 @@
     
     // Initialize app
     function init() {
+      console.log('🚀 Init called');
+      
       // Check if this is a login attempt from landing page
       const urlParams = new URLSearchParams(window.location.search);
       const isLoginAttempt = urlParams.get('login') === 'true';
+      console.log('🔍 Login attempt:', isLoginAttempt);
+      console.log('🌐 Current URL:', window.location.href);
       
       // Check Firebase auth state
       if (auth) {
+        console.log('✅ Firebase auth available');
+        
+        // Add a flag to prevent multiple auth state changes
+        let authStateProcessed = false;
+        
         auth.onAuthStateChanged((user) => {
+          console.log('🔄 Auth state changed:', user ? 'SIGNED IN' : 'SIGNED OUT');
+          
+          if (authStateProcessed) {
+            console.log('⚠️ Auth state already processed, ignoring');
+            return;
+          }
+          
           if (user) {
+            console.log('👤 User signed in:', user.displayName);
+            authStateProcessed = true;
+            
             // User is signed in
             isLoggedIn = true;
             currentUser = {
@@ -123,15 +142,19 @@
             
             loadApp();
           } else {
+            console.log('🚫 User signed out');
             // User is signed out
             if (isLoginAttempt) {
+              console.log('🔑 Starting login process');
               login();
             } else {
+              console.log('📋 Showing login prompt');
               showLoginPrompt();
             }
           }
         });
       } else {
+        console.log('❌ Firebase not available');
         // Firebase not available, show error
         showFirebaseError();
       }
@@ -139,19 +162,40 @@
     
     // Login function
     function login() {
+      console.log('🔑 Login function called');
+      
       if (!auth) {
-        console.error('Firebase Auth not initialized');
+        console.error('❌ Firebase Auth not initialized');
         return;
       }
       
       // Show loading
       loadingContainer.style.display = 'block';
+      console.log('⏳ Loading screen shown');
       
       const provider = new firebase.auth.GoogleAuthProvider();
       provider.addScope('profile');
       provider.addScope('email');
       
-      auth.signInWithRedirect(provider);
+      console.log('🚀 Starting redirect to Google');
+      
+      // Try redirect first, fallback to popup if it fails
+      auth.signInWithRedirect(provider)
+        .catch((error) => {
+          console.error('❌ Redirect failed, trying popup:', error);
+          
+          // Fallback to popup
+          auth.signInWithPopup(provider)
+            .then((result) => {
+              console.log('✅ Popup login successful');
+              // Auth state change will handle the rest
+            })
+            .catch((popupError) => {
+              console.error('❌ Both redirect and popup failed:', popupError);
+              loadingContainer.style.display = 'none';
+              alert('Login failed. Please try again or check your internet connection.');
+            });
+        });
     }
     
     // Load the main app
