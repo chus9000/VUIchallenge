@@ -591,7 +591,18 @@
       // Update in allChallenges array
       allChallenges[challengeId - 1].completed = currentChallenge.completed;
       
-      // Save to localStorage
+      // Save to Firebase
+      if (userChallengesRef) {
+        userChallengesRef.update({
+          challenges: allChallenges
+        }).then(() => {
+          console.log('Completion status saved to Firebase');
+        }).catch((error) => {
+          console.error('Error saving to Firebase:', error);
+        });
+      }
+      
+      // Also save to localStorage as backup
       localStorage.setItem('challenges', JSON.stringify(allChallenges));
       
       // Update UI
@@ -738,7 +749,18 @@
       // Update in allChallenges array
       allChallenges[challengeId - 1].notes = notes;
       
-      // For now, save to localStorage (Firebase can be added later)
+      // Save to Firebase
+      if (userChallengesRef) {
+        userChallengesRef.update({
+          challenges: allChallenges
+        }).then(() => {
+          console.log('Notes saved to Firebase');
+        }).catch((error) => {
+          console.error('Error saving notes to Firebase:', error);
+        });
+      }
+      
+      // Also save to localStorage as backup
       localStorage.setItem('challenges', JSON.stringify(allChallenges));
       
       // Update last saved value
